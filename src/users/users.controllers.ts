@@ -1,9 +1,6 @@
 import {PrismaClient} from "@prisma/client";
-import dotenv from "dotenv";
 import bcrypt from "bcrypt";
 import {Request, Response} from "express";
-
-dotenv.config();
 
 const prisma = new PrismaClient();
 const saltRounds = 7;
@@ -37,5 +34,10 @@ export const create = async (req: Request, res: Response) => {
 		},
 	});
 
-	res.send(user);
+	res.send({
+		email: user.email,
+		firstName: user.firstName,
+		lastName: user.lastName,
+		birthDate: user.birthDate
+	});
 };
