@@ -1,8 +1,11 @@
 import {PrismaClient} from "@prisma/client";
 import bcrypt from "bcrypt";
-import {Request, Response} from "express";
+import {NextFunction, Request, Response} from "express";
+import jwt from "jsonwebtoken";
+import dotenv from "dotenv";
 
 const prisma = new PrismaClient();
+dotenv.config();
 
 export const login = async (req: Request, res: Response) => {
 	const { email, password } = req.body;
@@ -21,14 +24,43 @@ export const login = async (req: Request, res: Response) => {
 	if (!passwordMatch) {
 		return res.status(401).send({ message: "Invalid credentials" });
 	}
-	res.send({
+	const authorizationToken = jwt.sign(
+		{ email: user.email },
+		process.env.JWT_SECRET as string,
+		{ expiresIn: "1h" }
+	);
+	res.json({
 		email: user.email,
 		firstName: user.firstName,
 		lastName: user.lastName,
+		accessToken: authorizationToken,
 		birthDate: user.birthDate
 	});
 };
 
 export const logout = async (req: Request, res: Response) => {
 	res.status(204).send();
+};
+
+export const auth = async (req: Request, res: Response, next: NextFunction) => {
+	const authHeader = req.headers.authorization;
+	if (!authHeader) {
+		return res.status(401).send({ message: "Missing authorization header" });
+	}
+	const token = authHeader.split(" ")[1];
+	try {
+		const decoded = jwt.verify(token, process.env.JWT_SECRET as string);
+		const user = await prisma.user.findUnique({
+			where: {
+				email: (decoded as any).email
+			}
+		});
+		if (!user) {
+			return res.status(404).send({ message: "User not found" });
+		}
+		req.headers["user-email"] = user.email;
+		next();
+	} catch (err) {
+		return res.status(401).send({ message: "Invalid token" });
+	}
 };

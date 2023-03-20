@@ -41,3 +41,25 @@ export const create = async (req: Request, res: Response) => {
 		birthDate: user.birthDate
 	});
 };
+
+export const getUser = async (req: Request, res: Response) => {
+	const { email } = req.params;
+	const userEmail = req.headers["user-email"];
+	if (email !== userEmail) {
+		return res.status(403).send({ message: "Forbidden" });
+	}
+	const user = await prisma.user.findUnique({
+		where: {
+			email
+		}
+	});
+	if (!user) {
+		return res.status(404).send({ message: "User not found" });
+	}
+	res.send({
+		email: user.email,
+		firstName: user.firstName,
+		lastName: user.lastName,
+		birthDate: user.birthDate
+	});
+};
