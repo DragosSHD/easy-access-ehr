@@ -22,6 +22,7 @@ module.exports = {
 			"error",
 			"tab"
 		],
+		"no-tabs": 0,
 		"linebreak-style": [
 			"error",
 			"unix"
