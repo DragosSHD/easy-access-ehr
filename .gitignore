@@ -138,6 +138,8 @@ dist
 # SvelteKit build / generate output
 .svelte-kit
 
-# ide
+# idea
 .idea
 
+# prisma migrations
+./src/util/prisma/migrations
