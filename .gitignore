@@ -142,4 +142,4 @@ dist
 .idea
 
 # prisma migrations
-./src/util/prisma/migrations
+./src/util/prisma/migrations/
