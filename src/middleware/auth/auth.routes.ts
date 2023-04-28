@@ -10,7 +10,7 @@ const router = express.Router();
 
 router.post("/login", login);
 router.get("/logout", logout);
-router.get("/create-authorization", auth, getEHRAuthorizationToken);
+router.post("/get-authorization", auth, getEHRAuthorizationToken);
 router.post("/create-authorization", auth, grantEHRAuthorization);
 
 export default router;

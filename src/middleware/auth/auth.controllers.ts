@@ -74,7 +74,7 @@ export const getEHRAuthorizationToken = async (req: Request, res: Response) => {
 		{ expiresIn: "2m" }
 	);
 
-	res.status(200).json(authorizationToken);
+	res.status(200).json({ data: authorizationToken });
 };
 
 export const grantEHRAuthorization = async (req: Request, res: Response) => {
