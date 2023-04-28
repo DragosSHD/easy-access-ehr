@@ -64,3 +64,30 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 		return res.status(401).send({ message: "Invalid token" });
 	}
 };
+
+export const getEHRAuthorizationToken = async (req: Request, res: Response) => {
+	const { healthRecords, expirationDate, types } = req.body;
+
+	const authorizationToken = jwt.sign(
+		{ healthRecords, expirationDate, types },
+		process.env.JWT_SECRET as string,
+		{ expiresIn: "2m" }
+	);
+
+	res.status(200).json(authorizationToken);
+};
+
+export const grantEHRAuthorization = async (req: Request, res: Response) => {
+	const { authorizationToken } = req.body;
+	try {
+		const decoded = jwt.verify(authorizationToken, process.env.JWT_SECRET as string);
+		console.log(decoded);
+	} catch (err) {
+		if (err instanceof jwt.TokenExpiredError) {
+			return res.status(401).send({ message: "Token expired" });
+		}
+		return res.status(401).send({ message: "Invalid token" });
+	}
+
+	res.status(200).send("Access granted");
+};

@@ -1,12 +1,12 @@
 import {PrismaClient} from "@prisma/client";
 import bcrypt from "bcrypt";
 import {Request, Response} from "express";
+import Web3 from "web3";
 
 const prisma = new PrismaClient();
-const saltRounds = 7;
 
 async function hashPassword(password: string) {
-	const salt = await bcrypt.genSalt(saltRounds);
+	const salt = await bcrypt.genSalt(process.env.SALT_ROUNDS as unknown as number);
 	return await bcrypt.hash(password, salt);
 }
 
@@ -24,17 +24,22 @@ export const create = async (req: Request, res: Response) => {
 		return res.status(409).send({ message: "User already exists" });
 	}
 	const hashedPassword = await hashPassword(password);
+	const web3 = new Web3(new Web3.providers
+		.HttpProvider("https://mainnet.infura.io/v3/0bd205144f654832b7c816e7aefdc20a"));
+	const account = web3.eth.accounts.create();
 	const user = await prisma.user.create({
 		data: {
 			email,
 			password: hashedPassword,
 			firstName,
 			lastName,
+			accountAddress: account.address,
+			accountPrivateKey: account.privateKey,
 			birthDate: new Date(birthDate)
 		},
 	});
 
-	res.send({
+	res.status(201).send({
 		email: user.email,
 		firstName: user.firstName,
 		lastName: user.lastName,
