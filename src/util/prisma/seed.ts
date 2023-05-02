@@ -24,7 +24,8 @@ const devSeed = async () => {
 			lastName: "Dobre",
 			accountAddress: "",
 			accountPrivateKey: "",
-			birthDate: new Date()
+			birthDate: new Date(),
+			role: "ADMIN"
 		},
 	});
 };

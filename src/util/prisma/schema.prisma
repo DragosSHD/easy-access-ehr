@@ -17,4 +17,11 @@ model User {
     accountPrivateKey String
     birthDate DateTime
     createdAt DateTime @default(now())
+    role     Role @default(PATIENT)
+}
+
+enum Role {
+    ADMIN
+    PATIENT
+    DOCTOR
 }

@@ -43,7 +43,8 @@ export const create = async (req: Request, res: Response) => {
 		email: user.email,
 		firstName: user.firstName,
 		lastName: user.lastName,
-		birthDate: user.birthDate
+		birthDate: user.birthDate,
+		role: user.role
 	});
 };
 
@@ -65,6 +66,7 @@ export const getUser = async (req: Request, res: Response) => {
 		email: user.email,
 		firstName: user.firstName,
 		lastName: user.lastName,
-		birthDate: user.birthDate
+		birthDate: user.birthDate,
+		role: user.role
 	});
 };

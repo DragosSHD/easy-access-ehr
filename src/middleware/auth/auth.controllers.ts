@@ -34,7 +34,8 @@ export const login = async (req: Request, res: Response) => {
 		firstName: user.firstName,
 		lastName: user.lastName,
 		accessToken: authorizationToken,
-		birthDate: user.birthDate
+		birthDate: user.birthDate,
+		role: user.role
 	});
 };
 
@@ -78,7 +79,7 @@ export const getEHRAuthorizationToken = async (req: Request, res: Response) => {
 	const authorizationToken = jwt.sign(
 		{ healthRecords, expirationDate, types, userId: user?.id },
 		process.env.JWT_SECRET as string,
-		{ expiresIn: "2m" }
+		{ expiresIn: "1h" }
 	);
 
 	res.status(200).json({ data: authorizationToken });
@@ -96,5 +97,5 @@ export const grantEHRAuthorization = async (req: Request, res: Response) => {
 		return res.status(401).send({ message: "Invalid token" });
 	}
 
-	res.status(200).send("Access granted");
+	res.status(200).json({ data: "Access Granted" });
 };
