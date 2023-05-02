@@ -61,15 +61,22 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 		req.headers["user-email"] = user.email;
 		next();
 	} catch (err) {
-		return res.status(401).send({ message: "Invalid token" });
+		return res.status(401).send({ message: "Invalid auth token" });
 	}
 };
 
 export const getEHRAuthorizationToken = async (req: Request, res: Response) => {
 	const { healthRecords, expirationDate, types } = req.body;
+	const userEmail = req.headers["user-email"];
+
+	const user = await prisma.user.findUnique({
+		where: {
+			email: userEmail as string
+		}
+	});
 
 	const authorizationToken = jwt.sign(
-		{ healthRecords, expirationDate, types },
+		{ healthRecords, expirationDate, types, userId: user?.id },
 		process.env.JWT_SECRET as string,
 		{ expiresIn: "2m" }
 	);
