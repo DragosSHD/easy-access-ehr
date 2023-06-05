@@ -28,7 +28,7 @@ export const create = async (req: Request, res: Response) => {
 		}
 		const hashedPassword = await hashPassword(password);
 		const web3 = new Web3(new Web3.providers
-			.HttpProvider("https://mainnet.infura.io/v3/0bd205144f654832b7c816e7aefdc20a"));
+			.HttpProvider(process.env.HTTP_PROVIDER as string));
 		const account = web3.eth.accounts.create();
 		const user = await prisma.user.create({
 			data: {
