@@ -1,50 +1,117 @@
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "mysql"
-    url      = env("DATABASE_URL")
+  provider = "mysql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-    id        Int      @id @default(autoincrement())
-    email     String   @unique
-    password  String
-    firstName String
-    lastName  String
-    accountAddress String
-    accountPrivateKey String
-    birthDate DateTime
-    createdAt DateTime @default(now())
-    role      Role @default(PATIENT)
+  id                Int            @id @default(autoincrement())
+  email             String         @unique
+  password          String
+  firstName         String
+  lastName          String
+  accountAddress    String
+  accountPrivateKey String
+  birthDate         DateTime
+  createdAt         DateTime       @default(now())
+  role              Role           @default(PATIENT)
+  conditions        Condition[]
+  allergies         Allergy[]
+  medications       Medication[]
+  imunisations      Immunization[]
+  medicalTests      MedicalTest[]
 }
 
 model Allergy {
-    id Int @id @default(autoincrement())
-    category String
-    criticality String
+  id           Int       @id @default(autoincrement())
+  category     String
+  criticality  String
+  type         String
+  resourceType String    @default("AllergyIntolerance")
+  substance    Substance @relation(fields: [substanceId], references: [id])
+  substanceId  Int
+  User         User?     @relation(fields: [userId], references: [id])
+  userId       Int?
+}
 
+model Substance {
+  id          Int          @id @default(autoincrement())
+  display     String
+  description String
+  Allergy     Allergy[]
+  Medication  Medication[]
 }
 
 model Condition {
+  id            Int           @id @default(autoincrement())
+  category      String
+  severity      String
+  patient       User          @relation(fields: [userId], references: [id])
+  userId        Int
+  text          String
+  onsetDateTime DateTime
+  bodySite      BodySite      @relation(fields: [bodySiteId], references: [id])
+  bodySiteId    Int
+  MedicalTest   MedicalTest[]
+}
 
+model BodySite {
+  id           Int            @id @default(autoincrement())
+  display      String
+  text         String
+  Condition    Condition[]
+  Immunization Immunization[]
 }
 
 model Immunization {
+  id             Int          @id @default(autoincrement())
+  date           DateTime
+  expirationDate DateTime
+  description    String
+  bodySite       BodySite     @relation(fields: [bodySiteId], references: [id])
+  bodySiteId     Int
+  note           String
+  manufacturer   Manufacturer @relation(fields: [manufacturerId], references: [id])
+  wasNotGiven    Boolean
+  doses          Int          @default(1)
+  manufacturerId Int
+  User           User?        @relation(fields: [userId], references: [id])
+  userId         Int?
+}
 
+model Manufacturer {
+  id           Int            @id @default(autoincrement())
+  name         String
+  Immunization Immunization[]
 }
 
 model Medication {
-
+  id          Int       @id @default(autoincrement())
+  text        String
+  display     String
+  start       DateTime
+  quantity    Int
+  alergens    Substance @relation(fields: [substanceId], references: [id])
+  substanceId Int
+  User        User?     @relation(fields: [userId], references: [id])
+  userId      Int?
 }
 
 model MedicalTest {
-
+  id              Int       @id @default(autoincrement())
+  type            String
+  targetCondition Condition @relation(fields: [conditionId], references: [id])
+  conditionId     Int
+  result          Boolean
+  User            User?     @relation(fields: [userId], references: [id])
+  userId          Int?
 }
 
 enum Role {
-    ADMIN
-    PATIENT
-    DOCTOR
+  ADMIN
+  PATIENT
+  DOCTOR
 }
