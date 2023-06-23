@@ -17,7 +17,30 @@ model User {
     accountPrivateKey String
     birthDate DateTime
     createdAt DateTime @default(now())
-    role     Role @default(PATIENT)
+    role      Role @default(PATIENT)
+}
+
+model Allergy {
+    id Int @id @default(autoincrement())
+    category String
+    criticality String
+
+}
+
+model Condition {
+
+}
+
+model Immunization {
+
+}
+
+model Medication {
+
+}
+
+model MedicalTest {
+
 }
 
 enum Role {
