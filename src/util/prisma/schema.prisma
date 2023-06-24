@@ -8,33 +8,43 @@ datasource db {
 }
 
 model User {
-  id                Int            @id @default(autoincrement())
-  email             String         @unique
+  id                Int              @id @default(autoincrement())
+  email             String           @unique
   password          String
   firstName         String
   lastName          String
   accountAddress    String
   accountPrivateKey String
   birthDate         DateTime
-  createdAt         DateTime       @default(now())
-  role              Role           @default(PATIENT)
-  conditions        Condition[]
-  allergies         Allergy[]
-  medications       Medication[]
-  imunisations      Immunization[]
-  medicalTests      MedicalTest[]
+  createdAt         DateTime         @default(now())
+  role              Role             @default(PATIENT)
+  patients          PatientProfile[] @relation("doctorPatients")
+  patientProfile    PatientProfile?
+}
+
+model PatientProfile {
+  id               Int            @id @default(autoincrement())
+  patient          User           @relation("doctorPatients", fields: [patientProfileId], references: [id])
+  patientProfileId Int            @unique
+  user             User           @relation(fields: [userId], references: [id])
+  userId           Int            @unique
+  conditions       Condition[]
+  allergies        Allergy[]
+  medications      Medication[]
+  imunisations     Immunization[]
+  medicalTests     MedicalTest[]
 }
 
 model Allergy {
-  id           Int       @id @default(autoincrement())
-  category     String
-  criticality  String
-  type         String
-  resourceType String    @default("AllergyIntolerance")
-  substance    Substance @relation(fields: [substanceId], references: [id])
-  substanceId  Int
-  User         User?     @relation(fields: [userId], references: [id])
-  userId       Int?
+  id               Int             @id @default(autoincrement())
+  category         String
+  criticality      String
+  type             String
+  resourceType     String          @default("AllergyIntolerance")
+  substance        Substance       @relation(fields: [substanceId], references: [id])
+  substanceId      Int
+  PatientProfile   PatientProfile? @relation(fields: [patientProfileId], references: [id])
+  patientProfileId Int?
 }
 
 model Substance {
@@ -46,16 +56,16 @@ model Substance {
 }
 
 model Condition {
-  id            Int           @id @default(autoincrement())
-  category      String
-  severity      String
-  patient       User          @relation(fields: [userId], references: [id])
-  userId        Int
-  text          String
-  onsetDateTime DateTime
-  bodySite      BodySite      @relation(fields: [bodySiteId], references: [id])
-  bodySiteId    Int
-  MedicalTest   MedicalTest[]
+  id               Int             @id @default(autoincrement())
+  category         String
+  severity         String
+  text             String
+  onsetDateTime    DateTime
+  bodySite         BodySite        @relation(fields: [bodySiteId], references: [id])
+  bodySiteId       Int
+  MedicalTest      MedicalTest[]
+  PatientProfile   PatientProfile? @relation(fields: [patientProfileId], references: [id])
+  patientProfileId Int?
 }
 
 model BodySite {
@@ -67,19 +77,19 @@ model BodySite {
 }
 
 model Immunization {
-  id             Int          @id @default(autoincrement())
-  date           DateTime
-  expirationDate DateTime
-  description    String
-  bodySite       BodySite     @relation(fields: [bodySiteId], references: [id])
-  bodySiteId     Int
-  note           String
-  manufacturer   Manufacturer @relation(fields: [manufacturerId], references: [id])
-  wasNotGiven    Boolean
-  doses          Int          @default(1)
-  manufacturerId Int
-  User           User?        @relation(fields: [userId], references: [id])
-  userId         Int?
+  id               Int             @id @default(autoincrement())
+  date             DateTime
+  expirationDate   DateTime
+  description      String
+  bodySite         BodySite        @relation(fields: [bodySiteId], references: [id])
+  bodySiteId       Int
+  note             String
+  manufacturer     Manufacturer    @relation(fields: [manufacturerId], references: [id])
+  wasNotGiven      Boolean
+  doses            Int             @default(1)
+  manufacturerId   Int
+  PatientProfile   PatientProfile? @relation(fields: [patientProfileId], references: [id])
+  patientProfileId Int?
 }
 
 model Manufacturer {
@@ -89,25 +99,25 @@ model Manufacturer {
 }
 
 model Medication {
-  id          Int       @id @default(autoincrement())
-  text        String
-  display     String
-  start       DateTime
-  quantity    Int
-  alergens    Substance @relation(fields: [substanceId], references: [id])
-  substanceId Int
-  User        User?     @relation(fields: [userId], references: [id])
-  userId      Int?
+  id               Int             @id @default(autoincrement())
+  text             String
+  display          String
+  start            DateTime
+  quantity         Int
+  alergens         Substance       @relation(fields: [substanceId], references: [id])
+  substanceId      Int
+  PatientProfile   PatientProfile? @relation(fields: [patientProfileId], references: [id])
+  patientProfileId Int?
 }
 
 model MedicalTest {
-  id              Int       @id @default(autoincrement())
-  type            String
-  targetCondition Condition @relation(fields: [conditionId], references: [id])
-  conditionId     Int
-  result          Boolean
-  User            User?     @relation(fields: [userId], references: [id])
-  userId          Int?
+  id               Int             @id @default(autoincrement())
+  type             String
+  targetCondition  Condition       @relation(fields: [conditionId], references: [id])
+  conditionId      Int
+  result           Boolean
+  PatientProfile   PatientProfile? @relation(fields: [patientProfileId], references: [id])
+  patientProfileId Int?
 }
 
 enum Role {

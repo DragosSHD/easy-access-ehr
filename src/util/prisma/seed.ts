@@ -1,6 +1,7 @@
 import {PrismaClient} from "@prisma/client";
 import bcrypt from "bcrypt";
 import dotenv from "dotenv";
+import {userRoles} from "../constants";
 
 dotenv.config();
 const prisma = new PrismaClient();
@@ -16,17 +17,62 @@ const main = async () => {
 };
 
 const devSeed = async () => {
-	await prisma.user.create({
+	await createUsers();
+
+};
+
+const createUsers = async () => {
+	const { id: adminId } = await prisma.user.create({
 		data: {
 			email: "dragos@gmail.com",
 			password: await hashPassword("Password@12"),
 			firstName: "Dragos",
 			lastName: "Dobre",
-			accountAddress: "",
-			accountPrivateKey: "",
+			accountAddress: process.env.ADMIN_ACCOUNT as string,
+			accountPrivateKey: process.env.ADMIN_PRIVATE_KEY as string,
 			birthDate: new Date(),
 			role: "ADMIN"
 		},
+	});
+
+	const { id: doctorId } = await prisma.user.create({
+		data: {
+			email: "dragos.doctor@gmail.com",
+			password: await hashPassword("Password@12"),
+			firstName: "Dragos",
+			lastName: "Dobre",
+			accountAddress: process.env.ADMIN_ACCOUNT as string,
+			accountPrivateKey: process.env.ADMIN_PRIVATE_KEY as string,
+			birthDate: new Date(),
+			role: userRoles.DOCTOR
+		},
+	});
+
+	const { id: patientId } = await prisma.user.create({
+		data: {
+			email: "dragos.patient@gmail.com",
+			password: await hashPassword("Password@12"),
+			firstName: "Dragos",
+			lastName: "Dobre",
+			accountAddress: process.env.ADMIN_ACCOUNT as string,
+			accountPrivateKey: process.env.ADMIN_PRIVATE_KEY as string,
+			birthDate: new Date(),
+			role: userRoles.PATIENT,
+		},
+	});
+
+	await prisma.patientProfile.createMany({
+		data: [
+			{
+				userId: patientId
+			},
+			{
+				userId: doctorId
+			},
+			{
+				userId: adminId
+			},
+		]
 	});
 };
 
