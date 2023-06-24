@@ -36,15 +36,15 @@ model PatientProfile {
 }
 
 model Allergy {
-  id               Int             @id @default(autoincrement())
+  id               Int            @id @default(autoincrement())
   category         String
   criticality      String
   type             String
-  resourceType     String          @default("AllergyIntolerance")
-  substance        Substance       @relation(fields: [substanceId], references: [id])
+  resourceType     String         @default("AllergyIntolerance")
+  substance        Substance      @relation(fields: [substanceId], references: [id])
   substanceId      Int
-  PatientProfile   PatientProfile? @relation(fields: [patientProfileId], references: [id])
-  patientProfileId Int?
+  PatientProfile   PatientProfile @relation(fields: [patientProfileId], references: [id])
+  patientProfileId Int
 }
 
 model Substance {
@@ -56,40 +56,30 @@ model Substance {
 }
 
 model Condition {
-  id               Int             @id @default(autoincrement())
+  id               Int            @id @default(autoincrement())
   category         String
   severity         String
   text             String
   onsetDateTime    DateTime
-  bodySite         BodySite        @relation(fields: [bodySiteId], references: [id])
-  bodySiteId       Int
+  bodySite         BodySite
   MedicalTest      MedicalTest[]
-  PatientProfile   PatientProfile? @relation(fields: [patientProfileId], references: [id])
-  patientProfileId Int?
-}
-
-model BodySite {
-  id           Int            @id @default(autoincrement())
-  display      String
-  text         String
-  Condition    Condition[]
-  Immunization Immunization[]
+  PatientProfile   PatientProfile @relation(fields: [patientProfileId], references: [id])
+  patientProfileId Int
 }
 
 model Immunization {
-  id               Int             @id @default(autoincrement())
+  id               Int            @id @default(autoincrement())
   date             DateTime
   expirationDate   DateTime
   description      String
-  bodySite         BodySite        @relation(fields: [bodySiteId], references: [id])
-  bodySiteId       Int
+  bodySite         BodySite
   note             String
-  manufacturer     Manufacturer    @relation(fields: [manufacturerId], references: [id])
+  manufacturer     Manufacturer   @relation(fields: [manufacturerId], references: [id])
   wasNotGiven      Boolean
-  doses            Int             @default(1)
+  doses            Int            @default(1)
   manufacturerId   Int
-  PatientProfile   PatientProfile? @relation(fields: [patientProfileId], references: [id])
-  patientProfileId Int?
+  PatientProfile   PatientProfile @relation(fields: [patientProfileId], references: [id])
+  patientProfileId Int
 }
 
 model Manufacturer {
@@ -99,29 +89,44 @@ model Manufacturer {
 }
 
 model Medication {
-  id               Int             @id @default(autoincrement())
+  id               Int            @id @default(autoincrement())
   text             String
   display          String
   start            DateTime
   quantity         Int
-  alergens         Substance       @relation(fields: [substanceId], references: [id])
+  alergens         Substance      @relation(fields: [substanceId], references: [id])
   substanceId      Int
-  PatientProfile   PatientProfile? @relation(fields: [patientProfileId], references: [id])
-  patientProfileId Int?
+  PatientProfile   PatientProfile @relation(fields: [patientProfileId], references: [id])
+  patientProfileId Int
 }
 
 model MedicalTest {
-  id               Int             @id @default(autoincrement())
+  id               Int            @id @default(autoincrement())
   type             String
-  targetCondition  Condition       @relation(fields: [conditionId], references: [id])
+  targetCondition  Condition      @relation(fields: [conditionId], references: [id])
   conditionId      Int
   result           Boolean
-  PatientProfile   PatientProfile? @relation(fields: [patientProfileId], references: [id])
-  patientProfileId Int?
+  PatientProfile   PatientProfile @relation(fields: [patientProfileId], references: [id])
+  patientProfileId Int
 }
 
 enum Role {
   ADMIN
   PATIENT
   DOCTOR
+}
+
+enum BodySite {
+  LEFT_ARM
+  RIGHT_ARM
+  LEFT_LEG
+  RIGHT_LEG
+  HEAD
+  CHEST
+  ABDOMEN
+  HEART
+  LUNGS
+  STOMACH
+  LEFT_EYE
+  RIGHT_EYE
 }

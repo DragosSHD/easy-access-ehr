@@ -18,6 +18,8 @@ const main = async () => {
 
 const devSeed = async () => {
 	await createUsers();
+	await createManufacturers();
+
 
 };
 
@@ -61,7 +63,7 @@ const createUsers = async () => {
 		},
 	});
 
-	await prisma.patientProfile.createMany({
+	const patientProfiles = await prisma.patientProfile.createMany({
 		data: [
 			{
 				userId: patientId
@@ -74,6 +76,35 @@ const createUsers = async () => {
 			},
 		]
 	});
+};
+
+const createManufacturers = async () => {
+
+	await prisma.manufacturer.createMany({
+		data: [
+			{ name: "Johnson&Johnson" },
+			{ name: "Pfizer" },
+			{ name: "Novartis" },
+			{ name: "GSK" },
+			{ name: "Roche" },
+		]
+	});
+
+};
+
+const addMedicalDataToUser = async (profileId: number) => {
+
+	// await prisma.immunization.createMany({
+	// 	data: [
+	// 		{
+	// 			date: new Date(),
+	// 			expirationDate: new Date(),
+	// 			description: "This should prevent Covid19 virus from inflicting significant damage.",
+	// 			patientProfileId: profileId,
+	// 		}
+	// 	]
+	// });
+
 };
 
 main()
