@@ -62,20 +62,6 @@ const createUsers = async () => {
 			role: userRoles.PATIENT,
 		},
 	});
-
-	const patientProfiles = await prisma.patientProfile.createMany({
-		data: [
-			{
-				userId: patientId
-			},
-			{
-				userId: doctorId
-			},
-			{
-				userId: adminId
-			},
-		]
-	});
 };
 
 const createManufacturers = async () => {
