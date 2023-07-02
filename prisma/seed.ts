@@ -122,7 +122,7 @@ const addMedicalDataToPatient = async (profileId: number) => {
 
 	const johnsonManufacturer = await prisma.manufacturer.findFirst({
 		where: {
-			name: "Johnson"
+			name: "Johnson&Johnson"
 		}
 	});
 
