@@ -3,6 +3,8 @@ import bcrypt from "bcrypt";
 import {NextFunction, Request, Response} from "express";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import Web3 from "web3";
+import {getContractABI} from "../../util/functions";
 
 const prisma = new PrismaClient();
 dotenv.config();
@@ -70,9 +72,42 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 export const checkAuthorization = async (req: Request, res: Response, next: NextFunction) => {
 	const userId = req.headers["user-id"];
 	const parsedUserID = parseInt(userId as string);
-	console.log(parsedUserID);
+	const urlComponents = req.originalUrl.split("/");
+	const patientId = urlComponents.pop();
+	const category = urlComponents.pop();
+
+	if (!patientId || !category) return res.status(500).send("Category or patientId not provided.");
+
+	const user = await prisma.user.findUnique({
+		where: {id: parsedUserID}
+	});
+	console.log(patientId);
+	const patient = await prisma.user.findUnique({
+		where: {id: parseInt(patientId)}
+	});
+
+	if (!user) return res.status(500).send("User not found at authorization.");
+	if (!patient) return res.status(404).send("Patient not found at authorization.");
+
+	const hasAccess = await checkAccess(user.accountAddress, patient.accountAddress, category);
+	if (!hasAccess) return res.status(401).send();
 
 	next();
+};
+
+const checkAccess = async (doctorAddress: string, patientAddress: string, category: string)=> {
+	const web3 = new Web3(
+		process.env.HTTP_PROVIDER as string
+	);
+
+	const contractAbi = getContractABI();
+
+	const contract = new web3.eth.Contract(contractAbi, process.env.CONTRACT_ADDRESS);
+	const signer = web3.eth.accounts.privateKeyToAccount(
+		process.env.ADMIN_PRIVATE_KEY as string
+	);
+	web3.eth.accounts.wallet.add(signer);
+	return await contract.methods.checkAccess(doctorAddress, patientAddress, category).call();
 };
 
 export const getEHRAuthorizationToken = async (req: Request, res: Response) => {
