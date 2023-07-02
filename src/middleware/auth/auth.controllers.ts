@@ -81,7 +81,6 @@ export const checkAuthorization = async (req: Request, res: Response, next: Next
 	const user = await prisma.user.findUnique({
 		where: {id: parsedUserID}
 	});
-	console.log(patientId);
 	const patient = await prisma.user.findUnique({
 		where: {id: parseInt(patientId)}
 	});
@@ -89,7 +88,15 @@ export const checkAuthorization = async (req: Request, res: Response, next: Next
 	if (!user) return res.status(500).send("User not found at authorization.");
 	if (!patient) return res.status(404).send("Patient not found at authorization.");
 
+	const toPrint = {
+		doctorAddress: user.accountAddress,
+		patientAddress: patient.accountAddress,
+		category: category
+	};
+	console.log(toPrint);
+
 	const hasAccess = await checkAccess(user.accountAddress, patient.accountAddress, category);
+	console.log("hasAccess", hasAccess);
 	if (!hasAccess) return res.status(401).send();
 
 	next();
@@ -108,6 +115,29 @@ const checkAccess = async (doctorAddress: string, patientAddress: string, catego
 	);
 	web3.eth.accounts.wallet.add(signer);
 	return await contract.methods.checkAccess(doctorAddress, patientAddress, category).call();
+};
+
+const addAccess = async (doctorAddress: string, patientAddress: string, expiration: number, categories: [string]) => {
+	const web3 = new Web3(
+		process.env.HTTP_PROVIDER as string
+	);
+
+	const contractAbi = getContractABI();
+
+	const contract = new web3.eth.Contract(contractAbi, process.env.CONTRACT_ADDRESS);
+	const signer = web3.eth.accounts.privateKeyToAccount(
+		process.env.ADMIN_PRIVATE_KEY as string
+	);
+	web3.eth.accounts.wallet.add(signer);
+	try {
+		await contract.methods
+			.addAccess(doctorAddress, patientAddress, expiration, categories)
+			.send({ from: process.env.ADMIN_ACCOUNT, gas: 100000 });
+		return true;
+	} catch (error) {
+		console.log(error);
+		return false;
+	}
 };
 
 export const getEHRAuthorizationToken = async (req: Request, res: Response) => {
@@ -131,10 +161,32 @@ export const getEHRAuthorizationToken = async (req: Request, res: Response) => {
 
 export const grantEHRAuthorization = async (req: Request, res: Response) => {
 	const { authorizationToken } = req.body;
+	const userId = req.headers["user-id"];
+	const parsedUserID = parseInt(userId as string);
 	try {
-		const decoded = jwt.verify(authorizationToken, process.env.JWT_SECRET as string);
-		console.log(decoded);
+		const { healthRecords, userId: patientId, expirationDate } = jwt
+			.verify(authorizationToken, process.env.JWT_SECRET as string) as {
+			healthRecords: [string],
+			userId: number,
+			expirationDate: number
+		};
+		const user = await prisma.user.findUnique({
+			where: {id: parsedUserID}
+		});
+		const patient = await prisma.user.findUnique({
+			where: {id: patientId}
+		});
+		if (!user) return res.status(500).send("User not found at authorization.");
+		if (!patient) return res.status(404).send("Patient not found at authorization.");
+
+		const callResult = await addAccess(user.accountAddress, patient.accountAddress, expirationDate, healthRecords);
+		if (!callResult) {
+			return res.status(500).send({ message: "Transaction failed." });
+		}
+
+
 	} catch (err) {
+		console.log(err);
 		if (err instanceof jwt.TokenExpiredError) {
 			return res.status(401).send({ message: "Token expired" });
 		}
