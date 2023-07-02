@@ -60,10 +60,19 @@ export const auth = async (req: Request, res: Response, next: NextFunction) => {
 			return res.status(404).send({ message: "User not found" });
 		}
 		req.headers["user-email"] = user.email;
+		req.headers["user-id"] = user.id.toString();
 		next();
 	} catch (err) {
 		return res.status(401).send({ message: "Invalid auth token" });
 	}
+};
+
+export const checkAuthorization = async (req: Request, res: Response, next: NextFunction) => {
+	const userId = req.headers["user-id"];
+	const parsedUserID = parseInt(userId as string);
+	console.log(parsedUserID);
+
+	next();
 };
 
 export const getEHRAuthorizationToken = async (req: Request, res: Response) => {
