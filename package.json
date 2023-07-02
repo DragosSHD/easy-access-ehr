@@ -18,8 +18,8 @@
     "url": "https://github.com/DragosSHD/easy-access-ehr/issues"
   },
   "prisma": {
-    "schema": "src/util/prisma/schema.prisma",
-    "seed": "ts-node src/util/prisma/seed.ts"
+    "schema": "./prisma/schema.prisma",
+    "seed": "ts-node ./prisma/seed.ts"
   },
   "homepage": "https://github.com/DragosSHD/easy-access-ehr#readme",
   "dependencies": {
