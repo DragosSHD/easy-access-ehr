@@ -5,7 +5,7 @@ import {auth, checkAuthorization} from "./middleware/auth/auth.controllers";
 
 const rootRouter = express.Router();
 
-rootRouter.use("/user", usersRoutes);
+rootRouter.use("/users", usersRoutes);
 rootRouter.use("/auth", authRoutes);
 rootRouter.use("/allergies/:patinetId", auth, checkAuthorization,
 	(req: Request, res: Response) => res.status(200).json({ hasAccess: true }));

@@ -37,7 +37,7 @@ export const create = async (req: Request, res: Response) => {
 				firstName,
 				lastName,
 				accountAddress: account.address,
-				accountPrivateKey: account.privateKey,
+				accountPrivateKey: "",
 				birthDate: new Date(birthDate)
 			},
 		});
