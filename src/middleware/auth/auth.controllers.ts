@@ -32,6 +32,7 @@ export const login = async (req: Request, res: Response) => {
 		{ expiresIn: "1h" }
 	);
 	res.json({
+		id: user.id,
 		email: user.email,
 		firstName: user.firstName,
 		lastName: user.lastName,
@@ -76,7 +77,7 @@ export const checkAuthorization = async (req: Request, res: Response, next: Next
 	const patientId = urlComponents.pop();
 	const category = urlComponents.pop();
 
-	if (!patientId || !category) return res.status(500).send("Category or patientId not provided.");
+	if (!patientId || !category) return res.status(500).json({ message: "Category or patientId not provided." });
 
 	const user = await prisma.user.findUnique({
 		where: {id: parsedUserID}
@@ -85,19 +86,17 @@ export const checkAuthorization = async (req: Request, res: Response, next: Next
 		where: {id: parseInt(patientId)}
 	});
 
-	if (!user) return res.status(500).send("User not found at authorization.");
-	if (!patient) return res.status(404).send("Patient not found at authorization.");
+	if (!user) return res.status(500).json({ message: "User not found at authorization." });
+	if (!patient) return res.status(404).json({ message: "Patient not found at authorization." });
 
 	const toPrint = {
 		doctorAddress: user.accountAddress,
 		patientAddress: patient.accountAddress,
 		category: category
 	};
-	console.log(toPrint);
 
 	const hasAccess = await checkAccess(user.accountAddress, patient.accountAddress, category);
-	console.log("hasAccess", hasAccess);
-	if (!hasAccess) return res.status(401).send();
+	if (!hasAccess) return res.status(401).json({ message: `Not Authorized to see ${category.toUpperCase()}` });
 
 	next();
 };
@@ -153,7 +152,7 @@ export const getEHRAuthorizationToken = async (req: Request, res: Response) => {
 	const authorizationToken = jwt.sign(
 		{ healthRecords, expirationDate, types, userId: user?.id },
 		process.env.JWT_SECRET as string,
-		{ expiresIn: "1h" }
+		{ expiresIn: "5m" }
 	);
 
 	res.status(200).json({ data: authorizationToken });
